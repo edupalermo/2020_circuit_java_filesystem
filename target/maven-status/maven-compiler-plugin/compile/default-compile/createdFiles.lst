@@ -1,0 +1,11 @@
+org\palermo\circuit\process\BitOutputStream.class
+org\palermo\circuit\process\Process$1.class
+org\palermo\circuit\util\UnicodeUtil.class
+org\palermo\circuit\process\Process.class
+org\palermo\circuit\configuration\ParameterMetadata$DataType.class
+org\palermo\circuit\configuration\ParameterMetadata$Direction.class
+org\palermo\circuit\configuration\TrainingSet.class
+org\palermo\circuit\configuration\Parameter.class
+org\palermo\circuit\configuration\Problem$ProblemBuilder.class
+org\palermo\circuit\configuration\ParameterMetadata.class
+org\palermo\circuit\configuration\TrainingSet$TrainingSetBuilder.class
