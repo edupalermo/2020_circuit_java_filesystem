@@ -1,9 +1,9 @@
-package org.palermo.circuit.process;
+package org.palermo.circuit.configuration.util;
 
 import org.palermo.circuit.configuration.ParameterMetadata;
-import org.palermo.circuit.configuration.Problem;
+import org.palermo.circuit.configuration.ParameterMetadata.Direction;
 import org.palermo.circuit.configuration.Problem.ProblemType;
-import org.palermo.circuit.configuration.TrainingSet;
+import org.palermo.circuit.stream.BitOutputStream;
 import org.palermo.circuit.util.DataTypeUtil;
 import org.palermo.circuit.util.IoUtils;
 
@@ -15,44 +15,58 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Process {
+public class ProcessRelevantBits {
 
     private static final File DIRECTORY = new File("C:\\Temp\\circuit");
-
     private static final String FILENAME_MASK = "bit_%d.dat";
 
-    public static void process(Problem problem, TrainingSet trainingSet) {
+    public static Map<String, Set<Integer>> process(ProblemType problemType,
+                               Map<String, ParameterMetadata> parameterMetadataMap,
+                               List<Map<String, String>> trainingData) {
 
-        if (problem.getProblemType() == ProblemType.STREAM) {
+        Map<String, Set<Integer>> relevantBits = new TreeMap<>();
+
+        if (problemType == ProblemType.STREAM) {
             throw new RuntimeException("Not implemented!");
         }
 
-        generateFixed(trainingSet);
+        generateFixed(trainingData);
 
         int current = 2;
 
-        for (String parameterName : problem.getParameterMetadata().keySet()) {
-            ParameterMetadata parameterMetadata = problem.getParameterMetadata().get(parameterName);
+        // Evaluate each Input parameter
+        for (Entry<String, ParameterMetadata> entry : parameterMetadataMap.entrySet()) {
+            String parameterName = entry.getKey();
+            ParameterMetadata parameterMetadata = entry.getValue();
 
-            String filename = String.format(FILENAME_MASK, current);
+            if (parameterMetadata.getDirection() == Direction.OUTPUT) {
+                continue;
+            }
 
             for (int i = 0; i < DataTypeUtil.getSize(parameterMetadata); i++) {
+                String filename = createFilename(current);
                 BitOutputStream test = new BitOutputStream(new File(DIRECTORY, filename));
 
-                for (Map<String, String> map : trainingSet.getList()) { // The amount of cycles
-                    test.writeBit(DataTypeUtil.getBit(parameterMetadata, map.get(parameterName) , i));
+                // for (int notImportant = 0; notImportant < trainingData.size(); notImportant++) { // The amount of cycles
+                for (Map<String, String> dataMap : trainingData) {
+                    test.writeBit(DataTypeUtil.getBit(parameterMetadata, dataMap.get(parameterName), i));
                 }
 
                 test.close();
 
                 if (hasNewInformation(filename)) {
+                    addRelevantBit(relevantBits, parameterName, i);
                     current++;
-                }
-                else {
+                } else {
                     if (!(new File(DIRECTORY, filename)).delete()) {
                         throw new RuntimeException("Fail to delete temporary file.");
                     }
@@ -60,6 +74,28 @@ public class Process {
 
             }
         }
+
+        for (int i = 0; i < current - 1; i++) {
+            if (!(new File(DIRECTORY, createFilename(i))).delete()) {
+                throw new RuntimeException("Fail to delete temporary file.");
+            }
+        }
+
+        return relevantBits;
+    }
+
+    private static void addRelevantBit(Map<String, Set<Integer>> relevantBits, String parameterName, int index) {
+        Set<Integer> set = relevantBits.get(parameterName);
+        if (set == null) {
+            set = new TreeSet<>();
+            set.add(index);
+            relevantBits.put(parameterName, set);
+        }
+        set.add(index);
+    }
+
+    private static String createFilename(int index) {
+        return String.format(FILENAME_MASK, index);
     }
 
     private static boolean hasNewInformation(String filename) {
@@ -96,14 +132,18 @@ public class Process {
                 int n1 = ch1.read(buf1);
                 int n2 = ch2.read(buf2);
 
-                if (n1 == -1 || n2 == -1) return n1 == n2;
+                if (n1 == -1 || n2 == -1) {
+                    return n1 == n2;
+                }
 
                 buf1.flip();
                 buf2.flip();
 
-                for (int i = 0; i < Math.min(n1, n2); i++)
-                    if (buf1.get() != buf2.get())
+                for (int i = 0; i < Math.min(n1, n2); i++) {
+                    if (buf1.get() != buf2.get()) {
                         return false;
+                    }
+                }
 
                 buf1.compact();
                 buf2.compact();
@@ -126,15 +166,24 @@ public class Process {
         return Integer.parseInt(matcher.group(1));
     }
 
-    private static void generateFixed(TrainingSet trainingSet) {
-        BitOutputStream zero = new BitOutputStream(new File(DIRECTORY, "bit_0.dat"));
-        BitOutputStream one = new BitOutputStream(new File(DIRECTORY, "bit_1.dat"));
-        for (int i = 0; i < trainingSet.getList().size(); i++) {
-            zero.writeBit(0);
-            one.writeBit(1);
+    private static void generateFixed(List<Map<String, String>> trainingData) {
+        BitOutputStream zero = null;
+        BitOutputStream one = null;
+
+        try {
+            zero = new BitOutputStream(new File(DIRECTORY, createFilename(0)));
+            one = new BitOutputStream(new File(DIRECTORY, createFilename(1)));
+
+            for (int i = 0; i < trainingData.size(); i++) {
+                zero.writeBit(0);
+                one.writeBit(1);
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            IoUtils.closeQuitely(zero);
+            IoUtils.closeQuitely(one);
         }
-        zero.close();
-        one.close();
     }
 
 }

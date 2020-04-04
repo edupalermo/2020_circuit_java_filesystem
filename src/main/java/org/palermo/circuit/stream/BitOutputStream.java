@@ -1,4 +1,4 @@
-package org.palermo.circuit.process;
+package org.palermo.circuit.stream;
 
 import java.io.Closeable;
 import java.io.File;
@@ -28,7 +28,9 @@ public class BitOutputStream implements Closeable {
     public void writeBit(int bit) {
         if (bit < 0 || bit > 1)
             throw new IllegalArgumentException("Illegal bit: " + bit);
-        buffer += bit << numDigits;
+        if (bit == 1) {
+            buffer = buffer | (bit << (7 - numDigits));
+        }
         numDigits++;
         if (numDigits == BYTE_SIZE)
             flush();
