@@ -16,15 +16,18 @@ public class Problem {
     private final Map<String, ParameterMetadata> parameterMetadataMap;
     private final Map<String, Set<Integer>> relevantBitsMap;
     private final Map<String, Integer> outputSizeMap;
+    private final List<Map<String, String>> trainingData;
 
     private Problem(ProblemType problemType, Map<String,
                     ParameterMetadata> parameterMetadataMap,
                     Map<String, Set<Integer>> relevantBitsMap,
-                    Map<String, Integer> outputSizeMap) {
+                    Map<String, Integer> outputSizeMap,
+                    List<Map<String, String>> trainingData) {
         this.problemType = problemType;
         this.parameterMetadataMap = Collections.unmodifiableMap(parameterMetadataMap);
         this.relevantBitsMap = Collections.unmodifiableMap(relevantBitsMap);
         this.outputSizeMap = Collections.unmodifiableMap(outputSizeMap);
+        this.trainingData = Collections.unmodifiableList(trainingData);
     }
 
     public static ProblemBuilder builder() {
@@ -37,6 +40,18 @@ public class Problem {
 
     public Map<String, ParameterMetadata> getParameterMetadataMap() {
         return parameterMetadataMap;
+    }
+
+    public Map<String, Set<Integer>> getRelevantBitsMap() {
+        return relevantBitsMap;
+    }
+
+    public Map<String, Integer> getOutputSizeMap() {
+        return outputSizeMap;
+    }
+
+    public List<Map<String, String>> getTrainingData() {
+        return trainingData;
     }
 
     public enum ProblemType {
@@ -74,7 +89,7 @@ public class Problem {
         public Problem build() {
             Map<String, Set<Integer>> relevantBitsMap = ProcessRelevantBits.process(problemType, parameterMetadata, trainingData);
             Map<String, Integer> outputSizeMap = ProcessOutputSize.process(parameterMetadata, trainingData);
-            return new Problem(problemType, parameterMetadata, relevantBitsMap, outputSizeMap);
+            return new Problem(problemType, parameterMetadata, relevantBitsMap, outputSizeMap, trainingData);
         }
     }
 }
