@@ -21,7 +21,7 @@ import java.util.Map.Entry;
 public class BruteForce {
 
 
-    public static void process(Problem problem, List<Map<String, String>> trainingDataList) {
+    public static void process(Problem problem) {
 
         if (problem.getProblemType() != ProblemType.STATELESS) {
             throw new RuntimeException("Not implemented!");
@@ -30,13 +30,13 @@ public class BruteForce {
 
         int blockSize = (int) Math.ceil(problem.getTrainingData().size() / 8);
 
-        Context context = new Context(trainingDataList);
+        Context context = new Context(problem.getTrainingData());
+
+        Comparable result = context.add();
 
 
 //        context.evaluate(new ZeroPortEvaluator(), problem.getTrainingData());
 //        context.evaluate(new OnePortEvaluator());
-
-
 
     }
 
@@ -50,7 +50,7 @@ public class BruteForce {
             String parameterName = entry.getKey();
             if (entry.getValue().getDirection() == Direction.INPUT) {
                 for (int i : problem.getRelevantBitsMap().get(parameterName)) {
-                    list.add(new InputPortEvaluator(problem.getParameterMetadataMap().get(parameterName), i));
+                    list.add(new InputPortEvaluator(parameterName, i));
                 }
             }
         }

@@ -7,17 +7,18 @@ import java.util.Map;
 
 public class InputPortEvaluator implements PortEvaluator {
 
-    private final ParameterMetadata parameterMedatada;
+    private final String parameterName;
     private final int relevantBit;
 
-    public InputPortEvaluator(ParameterMetadata parameterMedatada, int relevantBit) {
-        this.parameterMedatada = parameterMedatada;
+    public InputPortEvaluator(String parameterName, int relevantBit) {
+        this.parameterName = parameterName;
         this.relevantBit = relevantBit;
     }
 
     @Override
-    public int getValue(Map<String, String> parameters) {
-        return DataTypeUtil.getBit(parameterMedatada, parameters.get(parameterMedatada.getName()), relevantBit);
+    public int getValue(Map<String, ParameterMetadata> parameterMetadataMap, Map<String, String> parameters) {
+        ParameterMetadata parameterMetadata = parameterMetadataMap.get(parameterName);
+        return DataTypeUtil.getBit(parameterMetadata, parameters.get(parameterMetadata.getName()), relevantBit);
     }
 
     @Override

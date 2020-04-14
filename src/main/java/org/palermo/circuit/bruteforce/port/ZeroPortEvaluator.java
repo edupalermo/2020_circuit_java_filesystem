@@ -1,11 +1,13 @@
 package org.palermo.circuit.bruteforce.port;
 
+import org.palermo.circuit.configuration.ParameterMetadata;
+
 import java.util.Map;
 
 public class ZeroPortEvaluator implements PortEvaluator {
 
     @Override
-    public int getValue(Map<String, String> parameters) {
+    public int getValue(Map<String, ParameterMetadata> parameterMetadataMap, Map<String, String> parameters) {
         return 0;
     }
 
