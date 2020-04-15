@@ -48,9 +48,12 @@ public class Main {
     private class VowelResultFactory implements ResultFactory {
 
         @Override
-        public Result evaluate(File circuit, File outputConfiguration, List<Map<String, String>> trainingDataList) {
+        public Result evaluate(File circuit,
+                               File outputConfiguration,
+                               List<Map<String, String>> trainingDataList,
+                               Map<String, ParameterMetadata> parameterMetadataMap) {
             for (Map<String, String> trainingDataMap : trainingDataList) {
-                evaluate(circuit, outputConfiguration, trainingDataMap);
+                evaluate(circuit, outputConfiguration, trainingDataMap, parameterMetadataMap);
             }
 
             return null;

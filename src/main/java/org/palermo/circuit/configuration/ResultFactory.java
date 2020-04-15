@@ -6,5 +6,8 @@ import java.util.Map;
 
 public interface ResultFactory {
 
-    Result evaluate(File circuit, File output, List<Map<String, String>> trainingDataList);
+    Result evaluate(File circuit,
+                    File outputConfiguration,
+                    List<Map<String, String>> trainingDataList,
+                    Map<String, ParameterMetadata> parameterMetadataMap);
 }
